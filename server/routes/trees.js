@@ -130,21 +130,26 @@ router.post('/', async (req, res, next) => {
  *     - Value: Tree not found
  */
 router.delete('/:id', async (req, res, next) => {
-    const atree = await Tree.findByPk(req.params.id);
 
-    if (atree) {
-        await atree.destroy();
-        res.json({
-            status: "success",
-            message: `Successfully removed tree ${req.params.id}`
-        });
-    } else {
+    try {
+        const atree = await Tree.findByPk(req.params.id);
+        if (atree) {
+            await atree.destroy();
+            res.json({
+                status: "success",
+                message: `Successfully removed tree ${req.params.id}`
+            });
+        } else {
+            err;
+        }
+    } catch (err) {
         next({
             status: "not-found",
             message: `Could not remove tree ${req.params.id}`,
             details: "Tree not found"
-        })
+        });
     }
+
 
     // try {
     //     const aTree = await Tree.findByPk(req.params.id);
@@ -199,6 +204,37 @@ router.delete('/:id', async (req, res, next) => {
 router.put('/:id', async (req, res, next) => {
     try {
         // Your code here
+        const { id, name, location, height, size } = req.body;
+        const aTree = await Tree.findByPk(req.params.id);
+
+        if (Number(req.params.id) !== Number(id)) {
+            return next({
+                status: "error",
+                message: `Could not update tree`,
+                details: `${req.params.id} does not match ${req.body.id}`
+            });
+        };
+        if (!aTree) {
+            return next({
+                status: "not-found",
+                message: `Could not update tree ${req.params.id}`,
+                details: "Tree not found"
+            });
+        };
+
+        //id !== undefined ? aTree.id = id : aTree.id;
+        name !== undefined ? aTree.tree = name : aTree.tree;
+        location !== undefined ? aTree.location = location : aTree.location;
+        height !== undefined ? aTree.heightFt = height : aTree.heightFt;
+        size !== undefined ? aTree.groundCircumferenceFt = size : aTree.groundCircumferenceFt;
+
+        await aTree.validate();
+        await aTree.save();
+        res.json({
+            status: "success",
+            message: "Successfully updated tree",
+            data: aTree
+        })
     } catch (err) {
         next({
             status: "error",
