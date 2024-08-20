@@ -65,7 +65,7 @@ router.get('/insects-trees', async (req, res, next) => {
         include: {
             model: Tree,
             attributes: ['id', 'tree'],
-            through: {attributes: []},
+            through: { attributes: [] },
 
         },
         attributes: ['id', 'name', 'description'],
@@ -116,7 +116,162 @@ router.get('/insects-trees', async (req, res, next) => {
  */
 // Your code here
 router.post('/associate-tree-insect', async (req, res, next) => {
-    const { treeObj, insectObj } = req.body;
+    // try {
+    //     const { tree, insect } = req.body;
+
+    //     //handle tree
+    //     let aTree;
+    //     let anInsect;
+
+    //     if (!tree) return error;
+
+    //     if (tree.id) {
+    //         aTree = await Tree.findByPk(tree.id);
+    //         if (!aTree) return error;
+    //     };
+    //     if (!tree.id) {
+    //         const aTree = await Tree.build({
+    //             tree: tree.name,
+    //             location: tree.location,
+    //             heightFt: tree.height,
+    //             groundCircumferenceFt: tree.size
+    //         });
+    //         await aTree.validate();
+    //         await aTree.save();
+    //     };
+
+    //     //hanle insect
+    //     if (!insect) return error;
+
+    //     if (insect.id) {
+    //         anInsect = await Insect.findByPk(tree.id);
+    //         if (!anInsect) return error;
+    //     };
+    //     if (!insect.id) {
+    //         const anInsect = await Insect.build({
+    //             name: insect.name,
+    //             description: insect.description,
+    //             fact: insect.fact,
+    //             territory: insect.territory,
+    //             millimeters: insect.millimeters
+    //         });
+    //         await anInsect.validate();
+    //         await anInsect.save();
+    //     };
+    //     //detect existing relationshiop
+    //     if (aTree && anInsect) {
+    //         const association = await aTree.hasInsect(anInsect);
+    //         if (association) {
+    //             return error.message = `Association already exists between ${aTree.tree} $ ${anInsect.name}`;
+    //         }
+    //     }
+    //     await aTree.addInsects(anInsect);
+
+    //     res.json({
+    //         status: "success",
+    //         message: "Successfully created association",
+    //         data: {tree: aTree, insect: anInsect}
+    //     })
+
+    // } catch (error) {
+    //     next({
+    //         status: 'error',
+    //         message: 'Could not create association',
+    //         details: error.errors ? error.errors.map(item => item.message).join(', ') : error.message
+    //     })
+    // }
+    try {
+        const { tree, insect } = req.body;
+
+        if (!tree) {
+            return next({
+                status: 'error',
+                message: 'Could not create association',
+                details: 'Tree missing in request'
+            });
+        }
+
+        if (!insect) {
+            return next({
+                status: 'error',
+                message: 'Could not create association',
+                details: 'Insect missing in request'
+            });
+        }
+
+        // Handle tree
+        let aTree;
+
+        if (tree.id) {
+            aTree = await Tree.findByPk(tree.id);
+            if (!aTree) {
+                return next({
+                    status: 'error',
+                    message: 'Could not create association',
+                    details: 'Tree not found'
+                });
+            }
+        } else {
+            aTree = await Tree.build({
+                tree: tree.name,
+                location: tree.location,
+                heightFt: tree.height,
+                groundCircumferenceFt: tree.size
+            });
+            await aTree.validate();
+            await aTree.save();
+        }
+
+        // Handle insect
+        let anInsect;
+
+        if (insect.id) {
+            anInsect = await Insect.findByPk(insect.id);
+            if (!anInsect) {
+                return next({
+                    status: 'error',
+                    message: 'Could not create association',
+                    details: 'Insect not found'
+                });
+            }
+        } else {
+            anInsect = await Insect.build({
+                name: insect.name,
+                description: insect.description,
+                fact: insect.fact,
+                territory: insect.territory,
+                millimeters: insect.millimeters
+            });
+            await anInsect.validate();
+            await anInsect.save();
+        }
+
+        // Detect existing relationship
+        const associationExists = await aTree.hasInsect(anInsect);
+        if (associationExists) {
+            return next({
+                status: 'error',
+                message: 'Could not create association',
+                details: `Association already exists between ${aTree.tree} and ${anInsect.name}`
+            });
+        }
+
+        // Create association
+        await aTree.addInsect(anInsect);
+
+        res.json({
+            status: 'success',
+            message: 'Successfully created association',
+            data: { tree: aTree, insect: anInsect }
+        });
+
+    } catch (error) {
+        next({
+            status: 'error',
+            message: 'Could not create association',
+            details: error.errors ? error.errors.map(item => item.message).join(', ') : error.message
+        });
+    }
 });
 // Export class - DO NOT MODIFY
 module.exports = router;
