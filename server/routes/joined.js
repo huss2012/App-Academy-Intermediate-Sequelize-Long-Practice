@@ -4,7 +4,7 @@ const router = express.Router();
 
 // Import models - DO NOT MODIFY
 const { Insect, Tree } = require('../db/models');
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 
 /**
  * PHASE 7 - Step A: List of all trees with insects that are near them
@@ -24,6 +24,22 @@ router.get('/trees-insects', async (req, res, next) => {
 
     trees = await Tree.findAll({
         attributes: ['id', 'tree', 'location', 'heightFt'],
+        include:
+        {
+            model: Insect,
+            attributes: ['id', 'name'],
+            through: { attributes: [] },
+            where: {
+                name: {
+                    [Op.ne]: null,
+                },
+            }
+        },
+        order: [
+            ['heightFt', 'DESC'],
+            [Insect, 'name', 'ASC']
+        ]
+
     });
 
     res.json(trees);
@@ -46,8 +62,17 @@ router.get('/insects-trees', async (req, res, next) => {
     let payload = [];
 
     const insects = await Insect.findAll({
+        include: {
+            model: Tree,
+            attributes: ['id', 'tree'],
+            through: {attributes: []},
+
+        },
         attributes: ['id', 'name', 'description'],
-        order: [ ['name'] ],
+        order: [
+            ['name'],
+            [Tree, 'tree']
+        ],
     });
     for (let i = 0; i < insects.length; i++) {
         const insect = insects[i];
@@ -55,6 +80,7 @@ router.get('/insects-trees', async (req, res, next) => {
             id: insect.id,
             name: insect.name,
             description: insect.description,
+            trees: insect.Trees
         });
     }
 
@@ -89,6 +115,8 @@ router.get('/insects-trees', async (req, res, next) => {
  *   - (Any others you think of)
  */
 // Your code here
-
+router.post('/associate-tree-insect', async (req, res, next) => {
+    const { treeObj, insectObj } = req.body;
+});
 // Export class - DO NOT MODIFY
 module.exports = router;
