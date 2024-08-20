@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       Insect.belongsToMany(
         models.Tree,
-        {through: models.InsectTree}
+        { through: models.InsectTree, onDelete: 'CASCADE', hooks: true, foreignKey: 'insectId' }
       );
     }
   };

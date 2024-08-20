@@ -17,12 +17,12 @@ module.exports = (sequelize, DataTypes) => {
     insectId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      onDelete: 'cascade'
+      onDelete: 'CASCADE'
     },
     treeId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      onDelete: 'cascade'
+      onDelete: 'CASCADE'
     }
   }, {
     sequelize,

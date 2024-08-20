@@ -12,22 +12,30 @@ module.exports = {
       insectId: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        onDelete: 'cascade'
+        onDelete: "CASCADE",
+        references: {
+          model: 'Insects',
+          key: 'id'
+        }
       },
       treeId: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        onDelete: 'cascade'
+        onDelete: 'CASCADE',
+        references: {
+          model: 'Trees',
+          key: 'id'
+        }
       },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        default: Sequelize.literal("CURRENT_TIMESTAMP")
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP")
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        default: Sequelize.literal("CURRENT_TIMESTAMP")
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP")
       }
     });
   },
